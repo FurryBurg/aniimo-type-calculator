@@ -26,22 +26,14 @@ button:focus-visible{outline:2px solid white;outline-offset:2px}
 h1,h2,h3{margin:0}
 header,main{width:min(1700px,98%);margin:auto}
 header{
-    width:min(1700px,98%);
-    margin:auto;
-    padding:20px 0 14px;
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:15px;
+    padding:20px 0 14px;
 }
-header h1{
-    margin:0;
-    font-size:clamp(20px,2.3vw,34px);
-}
-header h1:last-child{
-    text-align:right;
-}
-h1{font-size:clamp(20px,2.3vw,34px)}
+header h1{font-size:clamp(20px,2.3vw,34px)}
+header h1:last-child{text-align:right}
 main{padding-bottom:24px}
 
 /* 共用面板 */
@@ -69,7 +61,8 @@ main{padding-bottom:24px}
     font-weight:800;
     white-space:nowrap;
 }
-.team-clear{
+.panel-actions{display:flex;align-items:center;gap:7px}
+.team-clear,.team-weakness-btn{
     border:1px solid var(--line);
     background:var(--card);
     color:var(--muted);
@@ -78,7 +71,15 @@ main{padding-bottom:24px}
     font-size:.77rem;
     white-space:nowrap;
 }
-.team-clear:hover{color:white;background:#374358}
+.team-clear:hover,.team-weakness-btn:hover{
+    background:#374358;
+    color:white;
+}
+.team-weakness-btn.active{
+    color:white;
+    background:#344357;
+    border-color:#91a7c3;
+}
 
 /* 隊伍卡片 */
 .slots{display:grid;gap:8px}
@@ -133,7 +134,52 @@ main{padding-bottom:24px}
 .aniimo-icon.dark{--type-color:rgb(163,115,210);--type-index:7}
 .aniimo-icon.ice{--type-color:rgb(69,193,214);--type-index:8}
 
-/* 隊伍圓形選擇 */
+/* 可拖曳的屬性圖標 */
+.aniimo-icon[data-drag-type],
+.svg-type-node{
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+    -webkit-user-select:none;
+}
+.aniimo-icon[data-drag-type]:active,
+.svg-type-node:active{cursor:grabbing}
+.aniimo-icon[data-drag-type] i{pointer-events:none}
+body.dragging-type{
+    cursor:grabbing!important;
+    user-select:none;
+    -webkit-user-select:none;
+}
+.drag-ghost{
+    position:fixed;
+    left:0;
+    top:0;
+    z-index:9999;
+    width:56px;
+    height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#202b3aee;
+    border:2px solid #fff;
+    border-radius:50%;
+    box-shadow:0 8px 28px #000a;
+    pointer-events:none;
+    transform:translate(-50%,-50%);
+}
+.drag-ghost .aniimo-icon{
+    --icon-size:32px;
+    width:48px;
+    height:48px;
+}
+.type-button.drag-over{
+    background:#435778;
+    border:3px solid #fff;
+    box-shadow:0 0 0 4px #88b8ff66;
+    transform:scale(1.08);
+}
+
+/* 隊伍屬性選擇 */
 .type-button{
     width:50px;
     height:50px;
@@ -146,6 +192,7 @@ main{padding-bottom:24px}
     align-items:center;
     justify-content:center;
     flex-shrink:0;
+    transition:background .12s,border-color .12s,transform .12s;
 }
 .type-button.filled{border-style:solid}
 .type-button:hover{border-color:white}
@@ -185,7 +232,6 @@ main{padding-bottom:24px}
     flex-wrap:wrap;
     gap:4px;
     min-width:0;
-    flex:1;
 }
 .result-icon{display:inline-flex;align-items:center}
 .result-icon .aniimo-icon{
@@ -216,7 +262,77 @@ main{padding-bottom:24px}
     height:25px;
 }
 
-/* 屬性研究標題列 */
+/* 隊伍分析 */
+.team-analysis{
+    margin-top:10px;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:#18202b;
+    min-width:0;
+}
+.team-analysis[hidden]{display:none}
+.team-analysis-grid{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.team-analysis-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    min-width:0;
+}
+.team-analysis-label{
+    width:50px;
+    flex-shrink:0;
+    font-size:.75rem;
+    font-weight:800;
+    color:var(--muted);
+}
+.team-analysis-items{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex:1;
+    min-width:0;
+    overflow-x:auto;
+    flex-wrap:nowrap;
+    padding:2px 0;
+}
+.team-analysis-item{
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    padding:5px 9px;
+    min-height:38px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:9px;
+    font-weight:800;
+    font-variant-numeric:tabular-nums;
+}
+.team-analysis-item .aniimo-icon{
+    --icon-size:19px;
+    width:28px;
+    height:28px;
+}
+.team-analysis-row.weak .team-analysis-item{
+    background:#69412b;
+    border-color:#a77850;
+}
+.team-analysis-row.resist .team-analysis-item{
+    background:#403159;
+    border-color:#8868b3;
+}
+.team-analysis-empty{
+    color:var(--muted);
+    font-size:.75rem;
+    white-space:nowrap;
+}
+
+/* 屬性研究 */
 .explorer{margin:12px 0 0}
 .explorer-header{
     display:flex;
@@ -226,9 +342,6 @@ main{padding-bottom:24px}
     margin-bottom:14px;
     min-width:0;
 }
-.explorer-title{flex-shrink:0}
-
-/* 中間的九種主屬性 */
 .primary-selector{
     display:flex;
     align-items:center;
@@ -261,7 +374,7 @@ main{padding-bottom:24px}
     box-shadow:0 0 0 2px #ffffff45;
 }
 
-/* 右側特殊倍率圖例 */
+/* 倍率圖例 */
 .legend{
     display:flex;
     align-items:center;
@@ -317,13 +430,6 @@ main{padding-bottom:24px}
     display:flex;
     flex-direction:column;
 }
-.research-panel h3{
-    font-size:.94rem;
-    margin:0 0 12px;
-    flex-shrink:0;
-}
-
-/* 固定表格高度，避免切換時跳動 */
 .research-table-wrap{
     flex:1;
     min-height:0;
@@ -369,20 +475,14 @@ main{padding-bottom:24px}
     border-top-color:#a0b4ce;
     border-bottom-color:#a0b4ce;
 }
-.research-table tr.selected td:first-child{
-    border-left-color:#a0b4ce;
-}
-.research-table tr.selected td:last-child{
-    border-right-color:#a0b4ce;
-}
+.research-table tr.selected td:first-child{border-left-color:#a0b4ce}
+.research-table tr.selected td:last-child{border-right-color:#a0b4ce}
 .research-table tr[data-pair]{cursor:pointer}
 .research-table tr[data-pair]:hover td{background:#3a495d}
 .research-table tr[data-pair]:focus-visible{
     outline:2px solid white;
     outline-offset:-2px;
 }
-
-/* 放大比較表圖標 */
 .pair-label{
     display:flex;
     align-items:center;
@@ -433,28 +533,8 @@ main{padding-bottom:24px}
     width:100%;
     height:100%;
 }
-.network-key{
-    display:flex;
-    flex-wrap:wrap;
-    gap:12px;
-    margin-top:12px;
-    color:var(--muted);
-    font-size:.72rem;
-}
-.network-key span{
-    display:flex;
-    align-items:center;
-    gap:6px;
-}
-.key-line{
-    width:20px;
-    height:3px;
-    border-radius:2px;
-    background:#8190a5;
-}
-.key-line.weak{background:#ffb45b}
-.key-line.resist{background:#bc91ed}
-.key-line.neutral{background:#8190a5}
+.svg-type-node{pointer-events:all}
+.svg-type-node image{pointer-events:none}
 
 /* 屬性選擇視窗 */
 .picker-backdrop{
@@ -501,8 +581,8 @@ main{padding-bottom:24px}
     color:var(--text);
     display:flex;
     flex-direction:column;
-    justify-content:center;
     align-items:center;
+    justify-content:center;
     gap:5px;
 }
 .pick .aniimo-icon{
@@ -515,11 +595,7 @@ main{padding-bottom:24px}
     border-color:white;
     background:#364152;
 }
-.picker-foot{
-    display:flex;
-    gap:8px;
-    margin-top:12px;
-}
+.picker-foot{display:flex;gap:8px;margin-top:12px}
 .picker-foot button{
     flex:1;
     background:#303c4e;
@@ -548,15 +624,9 @@ main{padding-bottom:24px}
     .research-table{height:auto}
 }
 @media(max-width:700px){
-    .explorer-header{
-        justify-content:flex-start;
-        gap:12px;
-    }
+    .explorer-header{justify-content:flex-start;gap:12px}
     .explorer-title{width:100%}
-    .primary-selector{
-        justify-content:flex-start;
-        flex:none;
-    }
+    .primary-selector{justify-content:flex-start;flex:none}
     .legend{margin-left:auto}
 }
 @media(max-width:650px){
@@ -572,8 +642,7 @@ main{padding-bottom:24px}
     .type-button{width:43px;height:43px}
     .type-button .aniimo-icon{
         --icon-size:24px;
-        width:35px;
-        height:35px;
+        width:35px;height:35px;
     }
     .slot-info{gap:5px}
     .info-cell{gap:4px}
@@ -583,18 +652,22 @@ main{padding-bottom:24px}
     .result-icon .aniimo-icon,
     .bonus-group .aniimo-icon{
         --icon-size:13px;
-        width:20px;
-        height:20px;
+        width:20px;height:20px;
     }
     .bonus-group{padding:3px}
-    .primary-button{
-        width:40px;
-        height:40px;
+    .team-analysis{padding:7px}
+    .team-analysis-row{gap:6px}
+    .team-analysis-label{width:43px;font-size:.68rem}
+    .team-analysis-items{gap:5px}
+    .team-analysis-item{padding:4px 7px;gap:5px}
+    .team-analysis-item .aniimo-icon{
+        --icon-size:15px;
+        width:23px;height:23px;
     }
+    .primary-button{width:40px;height:40px}
     .primary-button .aniimo-icon{
         --icon-size:20px;
-        width:32px;
-        height:32px;
+        width:32px;height:32px;
     }
     .research-panel{padding:8px}
     .research-table{min-width:420px}
@@ -607,29 +680,23 @@ main{padding-bottom:24px}
     .pair-label{height:38px;gap:3px}
     .pair-label .aniimo-icon{
         --icon-size:19px;
-        width:29px;
-        height:29px;
+        width:29px;height:29px;
     }
     .table-icons{min-height:38px;gap:3px}
     .table-icons .aniimo-icon,
     .table-icons .bonus-group .aniimo-icon{
         --icon-size:16px;
-        width:25px;
-        height:25px;
+        width:25px;height:25px;
     }
     .table-icons .bonus-group{padding:3px}
-    .network-wrap{
-        height:90vw;
-        min-height:340px;
-    }
+    .network-wrap{height:90vw;min-height:340px}
 }
 @media(max-width:390px){
     .slot-body{gap:5px}
     .type-button{width:37px;height:37px}
     .type-button .aniimo-icon{
         --icon-size:20px;
-        width:29px;
-        height:29px;
+        width:29px;height:29px;
     }
     .info-label{width:35px}
     .info-label .zh{font-size:.65rem}
@@ -637,8 +704,32 @@ main{padding-bottom:24px}
     .result-icon .aniimo-icon,
     .bonus-group .aniimo-icon{
         --icon-size:11px;
-        width:18px;
-        height:18px;
+        width:18px;height:18px;
+    }
+}
+.dual-orbit{
+    transform-origin:240px 240px;
+    animation:dualOrbit 8s linear infinite;
+}
+
+.dual-orbit .svg-type-node{
+    animation:dualCounterOrbit 8s linear infinite;
+}
+
+@keyframes dualOrbit{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(360deg)}
+}
+
+@keyframes dualCounterOrbit{
+    from{transform:rotate(0deg)}
+    to{transform:rotate(-360deg)}
+}
+
+@media(prefers-reduced-motion:reduce){
+    .dual-orbit,
+    .dual-orbit .svg-type-node{
+        animation:none;
     }
 }
 </style>
@@ -649,16 +740,31 @@ main{padding-bottom:24px}
     <h1>伊莫 Aniimo</h1>
     <h1>屬性剋制計算器 Type Calculator</h1>
 </header>
+
 <main>
     <section class="teams">
         <div class="panel">
             <div class="panel-header">
                 <h2 class="panel-title">我方隊伍｜My Team</h2>
-                <button class="team-clear" data-clear-team="ally">
-                    清空｜Clear
-                </button>
+
+                <div class="panel-actions">
+                    <button class="team-weakness-btn"
+                        id="teamWeaknessBtn"
+                        aria-expanded="false"
+                        aria-controls="teamAnalysis enemyTeamAnalysis">
+                        分析 Analysis
+                    </button>
+                    <button class="team-clear" data-clear-team="ally">
+                        清空｜Clear
+                    </button>
+                </div>
             </div>
+
             <div class="slots" id="allySlots"></div>
+
+            <div class="team-analysis" id="teamAnalysis" hidden>
+                <div class="team-analysis-grid" id="teamAnalysisGrid"></div>
+            </div>
         </div>
 
         <div class="panel">
@@ -668,7 +774,12 @@ main{padding-bottom:24px}
                     清空｜Clear
                 </button>
             </div>
+
             <div class="slots" id="enemySlots"></div>
+
+            <div class="team-analysis" id="enemyTeamAnalysis" hidden>
+                <div class="team-analysis-grid" id="enemyTeamAnalysisGrid"></div>
+            </div>
         </div>
     </section>
 
@@ -678,8 +789,7 @@ main{padding-bottom:24px}
 
             <div class="primary-selector"
                 id="primaryButtons"
-                aria-label="主屬性選擇">
-            </div>
+                aria-label="主屬性選擇"></div>
 
             <div class="legend" aria-label="特殊倍率圖例">
                 <span class="legend-item" title="雙重剋制">
@@ -701,14 +811,17 @@ main{padding-bottom:24px}
             <div class="research-panel">
                 <div class="research-table-wrap" id="researchTable"></div>
             </div>
+
+            <div class="research-panel">
                 <div class="network-wrap" id="networkGraph"></div>
+            </div>
         </div>
     </section>
 </main>
 
 <div class="picker-backdrop" id="pickerBackdrop" hidden>
-    <div class="picker" role="dialog" aria-modal="true"
-        aria-labelledby="pickerTitle">
+    <div class="picker" role="dialog"
+        aria-modal="true" aria-labelledby="pickerTitle">
         <div class="picker-title">
             <span id="pickerTitle">選擇屬性</span>
             <button class="picker-close" id="pickerClose"
@@ -724,6 +837,10 @@ main{padding-bottom:24px}
 
 <script>
 "use strict";
+
+/* =========================
+   屬性資料
+   ========================= */
 
 const TYPES=[
     {id:"grass",name:"草"},
@@ -775,7 +892,16 @@ const RESISTED={
     dark:["water","wind"],
     light:["electric","light"]
 };
+const ORBIT_DURATION=8000;
+let orbitStartTime=performance.now();
 
+/* =========================
+   計算與儲存
+   ========================= */
+function getOrbitDelay(){
+    const elapsed=(performance.now()-orbitStartTime)%ORBIT_DURATION;
+    return `-${elapsed}ms`;
+}
 function multiplier(attack,defense){
     if(ADVANTAGE[attack]?.includes(defense)) return 1.6;
     if(RESISTED[attack]?.includes(defense)) return 0.625;
@@ -785,29 +911,40 @@ function multiplier(attack,defense){
 function blankTeam(){
     return Array.from({length:4},()=>[null,null]);
 }
+
 function blankState(){
     return {ally:blankTeam(),enemy:blankTeam()};
 }
+
 function validSlot(slot){
     if(!Array.isArray(slot)) return [null,null];
+
     const a=IDS.includes(slot[0])?slot[0]:null;
     const b=IDS.includes(slot[1])&&slot[1]!==a?slot[1]:null;
+
     return a?[a,b]:b?[b,null]:[null,null];
 }
+
 function loadState(){
     try{
-        const saved=JSON.parse(localStorage.getItem("aniimo-type-team-v8"));
+        const saved=JSON.parse(
+            localStorage.getItem("aniimo-type-team-v8")
+        );
+
         if(!saved) return blankState();
 
         const result=blankState();
+
         for(const side of ["ally","enemy"]){
             if(Array.isArray(saved[side])){
                 result[side]=saved[side].slice(0,4).map(validSlot);
             }
+
             while(result[side].length<4){
                 result[side].push([null,null]);
             }
         }
+
         return result;
     }catch{
         return blankState();
@@ -819,38 +956,82 @@ let activePicker=null;
 let previousFocus=null;
 let primaryType="grass";
 let pairedType=null;
+let teamAnalysisOpen=false;
 
 try{
     const p=localStorage.getItem("aniimo-explorer-primary");
     const s=localStorage.getItem("aniimo-explorer-pair");
+
     if(IDS.includes(p)) primaryType=p;
     if(IDS.includes(s)&&s!==primaryType) pairedType=s;
+
+    teamAnalysisOpen=
+        localStorage.getItem("aniimo-team-analysis-open")==="true";
 }catch{}
 
 function save(){
     try{
-        localStorage.setItem("aniimo-type-team-v8",JSON.stringify(state));
-        localStorage.setItem("aniimo-explorer-primary",primaryType);
-        if(pairedType) localStorage.setItem("aniimo-explorer-pair",pairedType);
-        else localStorage.removeItem("aniimo-explorer-pair");
+        localStorage.setItem(
+            "aniimo-type-team-v8",
+            JSON.stringify(state)
+        );
+
+        localStorage.setItem(
+            "aniimo-explorer-primary",
+            primaryType
+        );
+
+        if(pairedType){
+            localStorage.setItem("aniimo-explorer-pair",pairedType);
+        }else{
+            localStorage.removeItem("aniimo-explorer-pair");
+        }
+
+        localStorage.setItem(
+            "aniimo-team-analysis-open",
+            String(teamAnalysisOpen)
+        );
     }catch{}
 }
-function slotTypes(slot){return slot.filter(Boolean);}
-function eq(a,b){return a!==null&&Math.abs(a-b)<0.00001;}
-function fmt(n){return Number(n.toFixed(6)).toString();}
+
+function slotTypes(slot){
+    return slot.filter(Boolean);
+}
+
+function eq(a,b){
+    return a!==null&&Math.abs(a-b)<0.00001;
+}
+
+function fmt(n){
+    return Number(n.toFixed(6)).toString();
+}
+
+/*
+    所有一般 HTML 屬性圖標都可拖曳。
+    不使用瀏覽器原生 dragstart，
+    改用 Pointer Events 同時支援滑鼠與觸控。
+*/
 function iconHTML(id){
     if(!id) return "";
-    return `<span class="aniimo-icon ${id}"
-        role="img" aria-label="${TYPE_MAP[id].name}"
-        title="${TYPE_MAP[id].name}">
+
+    return `<span
+        class="aniimo-icon ${id}"
+        data-drag-type="${id}"
+        role="img"
+        aria-label="${TYPE_MAP[id].name}"
+        title="${TYPE_MAP[id].name}｜按住拖曳可套用到隊伍">
         <i aria-hidden="true"></i>
     </span>`;
 }
 
 function attackValue(attack,defenseSlot){
     const defenses=slotTypes(defenseSlot);
+
     if(!attack||!defenses.length) return null;
-    return defenses.reduce((value,t)=>value*multiplier(attack,t),1);
+
+    return defenses.reduce(
+        (value,t)=>value*multiplier(attack,t),1
+    );
 }
 
 function defenseAnalysis(slot){
@@ -863,6 +1044,7 @@ function defenseAnalysis(slot){
 
     for(const type of TYPES){
         const value=attackValue(type.id,slot);
+
         if(eq(value,1.6)){
             result.weakness.normal.push({id:type.id});
         }else if(eq(value,2.56)){
@@ -873,6 +1055,7 @@ function defenseAnalysis(slot){
             result.resistance.bonus.push({id:type.id});
         }
     }
+
     return result;
 }
 
@@ -881,8 +1064,10 @@ function normalIcons(items){
         <span class="result-icon">${iconHTML(x.id)}</span>
     `).join("");
 }
+
 function bonusIcons(items,kind){
     if(!items.length) return "";
+
     const cls=kind==="strong"?"bonus-strong":"bonus-resist";
     const value=kind==="strong"?"2.56":"0.390625";
 
@@ -892,18 +1077,24 @@ function bonusIcons(items,kind){
         `).join("")}
     </span>`;
 }
+
 function infoCell(zh,en,data,kind){
-    let content=normalIcons(data.normal)+bonusIcons(data.bonus,kind);
-    if(!content) content='<span class="empty">—</span>';
+    const content=normalIcons(data.normal)+bonusIcons(data.bonus,kind);
 
     return `<div class="info-cell">
         <div class="info-label">
             <span class="zh">${zh}</span>
             <span class="en">${en}</span>
         </div>
-        <div class="info-tags">${content}</div>
+        <div class="info-tags">
+            ${content||'<span class="empty">—</span>'}
+        </div>
     </div>`;
 }
+
+/* =========================
+   隊伍畫面
+   ========================= */
 
 function slotHTML(side,index){
     const slot=state[side][index];
@@ -912,28 +1103,118 @@ function slotHTML(side,index){
 
     return `<article class="slot">
         <div class="slot-body">
+
             <div class="selection">
                 ${[0,1].map(pos=>`
-                    <button class="type-button ${slot[pos]?"filled":""}"
+                    <button
+                        class="type-button ${slot[pos]?"filled":""}"
                         data-pick="${side}:${index}:${pos}"
+                        data-slot-source="${side}:${index}:${pos}"
                         aria-label="${sideName}${index+1}，第${pos+1}屬性">
-                        ${slot[pos]?iconHTML(slot[pos]):'<span class="plus">＋</span>'}
+                        ${slot[pos]
+                            ?iconHTML(slot[pos])
+                            :'<span class="plus">＋</span>'}
                     </button>
                 `).join("")}
             </div>
+
             <div class="slot-info">
                 ${infoCell("弱點","Weak",defense.weakness,"strong")}
                 ${infoCell("抗性","Resist",defense.resistance,"resist")}
             </div>
+
         </div>
     </article>`;
 }
+
 function renderTeams(){
     document.getElementById("allySlots").innerHTML=
         state.ally.map((_,i)=>slotHTML("ally",i)).join("");
+
     document.getElementById("enemySlots").innerHTML=
         state.enemy.map((_,i)=>slotHTML("enemy",i)).join("");
+
+    renderTeamAnalysis();
 }
+
+/* =========================
+   隊伍分析：Weak / Resist
+   ========================= */
+
+function renderTeamAnalysis(){
+    const button=document.getElementById("teamWeaknessBtn");
+
+    button.classList.toggle("active",teamAnalysisOpen);
+    button.setAttribute("aria-expanded",String(teamAnalysisOpen));
+
+    const panels=[
+        ["ally","teamAnalysis","teamAnalysisGrid"],
+        ["enemy","enemyTeamAnalysis","enemyTeamAnalysisGrid"]
+    ];
+
+    for(const [side,panelId,gridId] of panels){
+        const panel=document.getElementById(panelId);
+        panel.hidden=!teamAnalysisOpen;
+
+        if(!teamAnalysisOpen) continue;
+
+        const configured=state[side].filter(
+            slot=>slotTypes(slot).length>0
+        );
+
+        const weakness=[];
+        const resistance=[];
+
+        for(const type of TYPES){
+            let weak=0;
+            let resist=0;
+
+            for(const slot of configured){
+                const value=attackValue(type.id,slot);
+
+                if(value>1.00001) weak++;
+                else if(value<0.99999) resist++;
+            }
+
+            if(weak>0){
+                weakness.push({id:type.id,count:weak});
+            }
+
+            if(resist>0){
+                resistance.push({id:type.id,count:resist});
+            }
+        }
+
+        weakness.sort((a,b)=>b.count-a.count);
+        resistance.sort((a,b)=>b.count-a.count);
+
+        function analysisRow(label,kind,items){
+            return `<div class="team-analysis-row ${kind}">
+                <span class="team-analysis-label">${label}</span>
+
+                <div class="team-analysis-items">
+                    ${items.length
+                        ?items.map(type=>`
+                            <div class="team-analysis-item"
+                                title="${TYPE_MAP[type.id].name}：${type.count} 個位置${kind==="weak"?"有弱點":"有抗性"}">
+                                ${iconHTML(type.id)}
+                                <span>×${type.count}</span>
+                            </div>
+                        `).join("")
+                        :'<span class="team-analysis-empty">—</span>'}
+                </div>
+            </div>`;
+        }
+
+        document.getElementById(gridId).innerHTML=
+            analysisRow("Weak","weak",weakness)+
+            analysisRow("Resist","resist",resistance);
+    }
+}
+
+/* =========================
+   隊伍屬性設定
+   ========================= */
 
 function setType(side,index,pos,type){
     const slot=state[side][index];
@@ -943,8 +1224,11 @@ function setType(side,index,pos,type){
         if(pos===0){
             slot[0]=slot[1];
             slot[1]=null;
-        }else slot[1]=null;
+        }else{
+            slot[1]=null;
+        }
     }else if(slot[other]===type){
+        // 選到另一格既有的屬性時，交換位置。
         [slot[0],slot[1]]=[slot[1],slot[0]];
     }else if(pos===1&&!slot[0]){
         slot[0]=type;
@@ -956,15 +1240,26 @@ function setType(side,index,pos,type){
     renderTeams();
     save();
 }
+
+/* =========================
+   屬性選擇視窗
+   ========================= */
+
 function closePicker(){
     document.getElementById("pickerBackdrop").hidden=true;
     activePicker=null;
-    if(previousFocus?.isConnected) previousFocus.focus();
+
+    if(previousFocus?.isConnected){
+        previousFocus.focus();
+    }
+
     previousFocus=null;
 }
+
 function openPicker(side,index,pos){
     previousFocus=document.activeElement;
     activePicker={side,index,pos};
+
     const slot=state[side][index];
 
     document.getElementById("pickerTitle").textContent=
@@ -973,8 +1268,11 @@ function openPicker(side,index,pos){
     document.getElementById("pickerGrid").innerHTML=TYPES.map(t=>{
         const selected=slot[pos]===t.id;
         const otherSelected=slot[1-pos]===t.id;
-        return `<button class="pick ${selected||otherSelected?"selected":""}"
-            data-type="${t.id}" aria-pressed="${selected}">
+
+        return `<button
+            class="pick ${selected||otherSelected?"selected":""}"
+            data-type="${t.id}"
+            aria-pressed="${selected}">
             ${iconHTML(t.id)}
             <small>${t.name}${otherSelected?" ⇄":""}</small>
         </button>`;
@@ -984,10 +1282,14 @@ function openPicker(side,index,pos){
     document.querySelector("#pickerGrid .pick")?.focus();
 }
 
-/* 主屬性 */
+/* =========================
+   屬性研究
+   ========================= */
+
 function renderPrimaryButtons(){
     document.getElementById("primaryButtons").innerHTML=TYPES.map(t=>`
-        <button class="primary-button ${primaryType===t.id?"active":""}"
+        <button
+            class="primary-button ${primaryType===t.id?"active":""}"
             data-primary="${t.id}"
             aria-pressed="${primaryType===t.id}"
             title="${t.name}屬性">
@@ -996,12 +1298,12 @@ function renderPrimaryButtons(){
     `).join("");
 }
 
-/* 表格圖標 */
 function tableIcons(slot,kind){
-    const analysis=defenseAnalysis(slot)[kind];
+    const data=defenseAnalysis(slot)[kind];
     const style=kind==="weakness"?"strong":"resist";
-    return normalIcons(analysis.normal)+
-        bonusIcons(analysis.bonus,style)||
+
+    return normalIcons(data.normal)+
+        bonusIcons(data.bonus,style)||
         '<span class="empty">—</span>';
 }
 
@@ -1012,7 +1314,7 @@ function renderResearchTable(){
             .map(id=>({pair:id,slot:[primaryType,id]}))
     ];
 
-    const html=`
+    document.getElementById("researchTable").innerHTML=`
         <table class="research-table">
             <thead>
                 <tr>
@@ -1022,32 +1324,41 @@ function renderResearchTable(){
                 </tr>
             </thead>
             <tbody>
-            ${rows.map(row=>`
-                <tr data-pair="${row.pair||""}"
-                    tabindex="0"
-                    aria-selected="${pairedType===row.pair}"
-                    class="${pairedType===row.pair?"selected":""}"
-                    title="點擊查看關係網">
-                    <td>
-                        <div class="pair-label">
-                            ${row.slot.filter(Boolean).map(iconHTML).join("")}
-                        </div>
-                    </td>
-                    <td><div class="table-icons">
-                        ${tableIcons(row.slot,"weakness")}
-                    </div></td>
-                    <td><div class="table-icons">
-                        ${tableIcons(row.slot,"resistance")}
-                    </div></td>
-                </tr>
-            `).join("")}
+                ${rows.map(row=>`
+                    <tr
+                        data-pair="${row.pair||""}"
+                        tabindex="0"
+                        aria-selected="${pairedType===row.pair}"
+                        class="${pairedType===row.pair?"selected":""}"
+                        title="點擊查看關係網">
+
+                        <td>
+                            <div class="pair-label">
+                                ${row.slot.filter(Boolean).map(iconHTML).join("")}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="table-icons">
+                                ${tableIcons(row.slot,"weakness")}
+                            </div>
+                        </td>
+
+                        <td>
+                            <div class="table-icons">
+                                ${tableIcons(row.slot,"resistance")}
+                            </div>
+                        </td>
+                    </tr>
+                `).join("")}
             </tbody>
         </table>`;
-
-    document.getElementById("researchTable").innerHTML=html;
 }
 
-/* SVG Sprite 圖標 */
+/* =========================
+   SVG 屬性圖標與關係網
+   ========================= */
+
 function svgIcon(id,x,y,size){
     const idx=IDS.indexOf(id);
     const r=size/2;
@@ -1056,29 +1367,52 @@ function svgIcon(id,x,y,size){
     const offset=(size-inner)/2;
 
     return `
-        <defs>
-            <clipPath id="${clip}">
-                <rect x="${x+offset}" y="${y+offset}"
-                    width="${inner}" height="${inner}"/>
-            </clipPath>
-        </defs>
-        <circle cx="${x+r}" cy="${y+r}" r="${r}"
-            fill="${COLORS[id]}"/>
-        <image href="attributes.png"
-            x="${x+offset}"
-            y="${y+offset-idx*inner}"
-            width="${inner}"
-            height="${inner*9}"
-            clip-path="url(#${clip})"
-            preserveAspectRatio="none"/>
-    `;
+        <g class="svg-type-node"
+            data-drag-type="${id}"
+            aria-label="${TYPE_MAP[id].name}屬性"
+            style="transform-origin:${x+r}px ${y+r}px">
+
+            <defs>
+                <clipPath id="${clip}">
+                    <rect
+                        x="${x+offset}"
+                        y="${y+offset}"
+                        width="${inner}"
+                        height="${inner}"/>
+                </clipPath>
+            </defs>
+
+            <circle
+                cx="${x+r}"
+                cy="${y+r}"
+                r="${r}"
+                fill="${COLORS[id]}"/>
+
+            <image
+                href="attributes.png"
+                x="${x+offset}"
+                y="${y+offset-idx*inner}"
+                width="${inner}"
+                height="${inner*9}"
+                clip-path="url(#${clip})"
+                preserveAspectRatio="none"/>
+
+        </g>`;
 }
 
 function networkStyle(value){
-    if(eq(value,2.56)) return {stroke:"#ffbf6b",width:5,label:"#ffdcaa"};
-    if(eq(value,1.6)) return {stroke:"#d99b57",width:3,label:"#ffd09a"};
-    if(eq(value,0.390625)) return {stroke:"#c49af0",width:5,label:"#e2caff"};
-    if(eq(value,0.625)) return {stroke:"#9170b8",width:3,label:"#d6c1f2"};
+    if(eq(value,2.56)){
+        return {stroke:"#ffbf6b",width:5,label:"#ffdcaa"};
+    }
+    if(eq(value,1.6)){
+        return {stroke:"#d99b57",width:3,label:"#ffd09a"};
+    }
+    if(eq(value,0.390625)){
+        return {stroke:"#c49af0",width:5,label:"#e2caff"};
+    }
+    if(eq(value,0.625)){
+        return {stroke:"#9170b8",width:3,label:"#d6c1f2"};
+    }
     return {stroke:"#66758a",width:1.5,label:"#acb7c8"};
 }
 
@@ -1086,70 +1420,114 @@ function renderNetwork(){
     const defense=[primaryType,pairedType];
     const center=240;
     const radius=176;
+
     let lines="";
     let nodes="";
 
-    TYPES.forEach((t,i)=>{
+    TYPES.forEach((type,i)=>{
         const angle=(-90+i*40)*Math.PI/180;
         const x=center+Math.cos(angle)*radius;
         const y=center+Math.sin(angle)*radius;
-        const value=attackValue(t.id,defense);
+
+        const value=attackValue(type.id,defense);
         const style=networkStyle(value);
 
-        const vx=center-x,vy=center-y;
+        const vx=center-x;
+        const vy=center-y;
         const length=Math.hypot(vx,vy);
-        const ux=vx/length,uy=vy/length;
+        const ux=vx/length;
+        const uy=vy/length;
 
-        const startX=x+ux*30,startY=y+uy*30;
-        const endX=center-ux*63,endY=center-uy*63;
-        const labelX=x+ux*65,labelY=y+uy*65;
+        const startX=x+ux*30;
+        const startY=y+uy*30;
+        const endX=center-ux*63;
+        const endY=center-uy*63;
+
+        const labelX=x+ux*65;
+        const labelY=y+uy*65;
         const markerId=`arrow-${i}`;
 
         lines+=`
             <defs>
-                <marker id="${markerId}" markerWidth="6"
-                    markerHeight="6" refX="4.5" refY="3"
-                    orient="auto" markerUnits="userSpaceOnUse">
-                    <path d="M0 0 L6 3 L0 6 Z" fill="${style.stroke}"/>
+                <marker id="${markerId}"
+                    markerWidth="6"
+                    markerHeight="6"
+                    refX="4.5"
+                    refY="3"
+                    orient="auto"
+                    markerUnits="userSpaceOnUse">
+                    <path
+                        d="M0 0 L6 3 L0 6 Z"
+                        fill="${style.stroke}"/>
                 </marker>
             </defs>
-            <line x1="${startX}" y1="${startY}"
-                x2="${endX}" y2="${endY}"
+
+            <line
+                x1="${startX}"
+                y1="${startY}"
+                x2="${endX}"
+                y2="${endY}"
                 stroke="${style.stroke}"
                 stroke-width="${style.width}"
                 stroke-linecap="round"
                 marker-end="url(#${markerId})"
                 opacity="${eq(value,1)?.55:1}"/>
-          
+
             ${!eq(value,1)?`
-                <rect x="${labelX-25}" y="${labelY-11}"
-                    width="50" height="22" rx="7"
-                    fill="#101722" stroke="#354052"/>
-                <text x="${labelX}" y="${labelY+4}"
-                    text-anchor="middle" font-size="12"
-                    font-weight="700" fill="${style.label}">
+                <rect
+                    x="${labelX-25}"
+                    y="${labelY-11}"
+                    width="50"
+                    height="22"
+                    rx="7"
+                    fill="#101722"
+                    stroke="#354052"/>
+
+                <text
+                    x="${labelX}"
+                    y="${labelY+4}"
+                    text-anchor="middle"
+                    font-size="12"
+                    font-weight="700"
+                    fill="${style.label}">
                     ${fmt(value)}×
                 </text>
             `:""}
         `;
 
-        nodes+=svgIcon(t.id,x-26,y-26,52);
+        nodes+=svgIcon(type.id,x-26,y-26,52);
     });
 
-    const centerNodes=pairedType
-        ?svgIcon(primaryType,center-47,center-23,46)+
-         svgIcon(pairedType,center+1,center-23,46)
-        :svgIcon(primaryType,center-28,center-28,56);
+      const orbitDelay=getOrbitDelay();
+
+      const centerNodes=pairedType
+          ?`<g class="dual-orbit" style="animation-delay:${orbitDelay}">
+              ${svgIcon(primaryType,center-51,center-23,46)
+                  .replace('class="svg-type-node"',
+                           `class="svg-type-node" style="animation-delay:${orbitDelay};transform-origin:${center-28}px ${center}px"`)}
+              ${svgIcon(pairedType,center+5,center-23,46)
+                  .replace('class="svg-type-node"',
+                           `class="svg-type-node" style="animation-delay:${orbitDelay};transform-origin:${center+28}px ${center}px"`)}
+            </g>`
+          :svgIcon(primaryType,center-28,center-28,56);
 
     document.getElementById("networkGraph").innerHTML=`
-        <svg viewBox="0 0 480 480"
+        <svg
+            viewBox="0 0 480 480"
             xmlns="http://www.w3.org/2000/svg"
             role="img"
             aria-label="屬性剋制關係網">
+
             ${lines}
-            <circle cx="240" cy="240" r="60"
+
+            <circle
+                cx="240"
+                cy="240"
+                r="60"
                 fill="#202b3a"
-                stroke="#aeb9ca" stroke-width="2"/>
+                stroke="#aeb9ca"
+                stroke-width="2"/>
+
             ${centerNodes}
             ${nodes}
         </svg>`;
@@ -1162,9 +1540,190 @@ function renderExplorer(){
     save();
 }
 
-/* 操作事件 */
+/* =========================
+   全域屬性拖曳功能
+   ========================= */
+
+/*
+    拖曳來源：
+    任何帶有 data-drag-type 的圖標。
+
+    拖曳目標：
+    我方或敵方隊伍的 data-pick 按鈕。
+
+    這裡使用 Pointer Events，
+    讓滑鼠、觸控與 SVG 圖標共用同一套邏輯。
+*/
+
+let dragSession=null;
+let dragGhost=null;
+let dragTarget=null;
+let suppressNextClick=false;
+
+function createDragGhost(type){
+    const ghost=document.createElement("div");
+    ghost.className="drag-ghost";
+
+    ghost.innerHTML=iconHTML(type);
+    document.body.appendChild(ghost);
+
+    return ghost;
+}
+
+function moveDragGhost(x,y){
+    if(!dragGhost) return;
+
+    dragGhost.style.left=x+"px";
+    dragGhost.style.top=y+"px";
+}
+
+function findDropTarget(x,y){
+    const el=document.elementFromPoint(x,y);
+    return el?.closest(".type-button[data-pick]")||null;
+}
+
+function highlightDropTarget(target){
+    if(dragTarget===target) return;
+
+    if(dragTarget){
+        dragTarget.classList.remove("drag-over");
+    }
+
+    dragTarget=target;
+
+    if(dragTarget){
+        dragTarget.classList.add("drag-over");
+    }
+}
+
+function clearDragVisual(){
+    if(dragTarget){
+        dragTarget.classList.remove("drag-over");
+    }
+
+    dragTarget=null;
+
+    if(dragGhost){
+        dragGhost.remove();
+    }
+
+    dragGhost=null;
+    document.body.classList.remove("dragging-type");
+}
+
+function resetDrag(){
+    clearDragVisual();
+    dragSession=null;
+}
+
+document.addEventListener("pointerdown",e=>{
+    if(e.button!==0||dragSession) return;
+
+    const source=e.target.closest("[data-drag-type]");
+    if(!source) return;
+
+    const type=source.dataset.dragType;
+    if(!IDS.includes(type)) return;
+
+    const slotButton=source.closest(".type-button[data-slot-source]");
+
+    dragSession={
+        pointerId:e.pointerId,
+        type,
+        startX:e.clientX,
+        startY:e.clientY,
+        dragging:false,
+        sourceSlot:slotButton?.dataset.slotSource||null
+    };
+});
+
+document.addEventListener("pointermove",e=>{
+    if(!dragSession) return;
+    if(e.pointerId!==dragSession.pointerId) return;
+
+    const dx=e.clientX-dragSession.startX;
+    const dy=e.clientY-dragSession.startY;
+
+    if(!dragSession.dragging){
+        // 小幅移動視為一般點擊，超過門檻才開始拖曳。
+        if(Math.hypot(dx,dy)<8) return;
+
+        dragSession.dragging=true;
+        dragGhost=createDragGhost(dragSession.type);
+        document.body.classList.add("dragging-type");
+    }
+
+    e.preventDefault();
+
+    moveDragGhost(e.clientX,e.clientY);
+
+    const target=findDropTarget(e.clientX,e.clientY);
+    highlightDropTarget(target);
+}, {passive:false});
+
+document.addEventListener("pointerup",e=>{
+    if(!dragSession||e.pointerId!==dragSession.pointerId) return;
+
+    const session=dragSession;
+
+    if(!session.dragging){
+        resetDrag();
+        return;
+    }
+
+    const target=findDropTarget(e.clientX,e.clientY);
+    suppressNextClick=true;
+
+    resetDrag();
+
+    if(target){
+        const [side,index,pos]=target.dataset.pick.split(":");
+        setType(side,Number(index),Number(pos),session.type);
+    }else if(session.sourceSlot){
+        const [side,index,pos]=session.sourceSlot.split(":");
+
+        // 確認來源位置仍然是原本的屬性，才執行清除。
+        if(state[side][Number(index)][Number(pos)]===session.type){
+            setType(side,Number(index),Number(pos),null);
+        }
+    }
+
+    setTimeout(()=>{
+        suppressNextClick=false;
+    },0);
+});
+
+document.addEventListener("pointercancel",e=>{
+    if(dragSession&&e.pointerId===dragSession.pointerId){
+        resetDrag();
+    }
+});
+
+document.addEventListener("click",e=>{
+    if(!suppressNextClick) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    suppressNextClick=false;
+},true);
+
+/*
+    避免瀏覽器原生圖片／HTML 拖曳
+    與自訂指標拖曳功能發生衝突。
+*/
+document.addEventListener("dragstart",e=>{
+    if(e.target.closest("[data-drag-type]")){
+        e.preventDefault();
+    }
+});
+
+/* =========================
+   原本的操作事件
+   ========================= */
+
 document.addEventListener("click",e=>{
     const pick=e.target.closest("[data-pick]");
+
     if(pick){
         const [side,index,pos]=pick.dataset.pick.split(":");
         openPicker(side,Number(index),Number(pos));
@@ -1172,6 +1731,7 @@ document.addEventListener("click",e=>{
     }
 
     const clearTeam=e.target.closest("[data-clear-team]");
+
     if(clearTeam){
         state[clearTeam.dataset.clearTeam]=blankTeam();
         renderTeams();
@@ -1180,6 +1740,7 @@ document.addEventListener("click",e=>{
     }
 
     const type=e.target.closest("[data-type]");
+
     if(type&&activePicker){
         const {side,index,pos}=activePicker;
         setType(side,index,pos,type.dataset.type);
@@ -1188,54 +1749,93 @@ document.addEventListener("click",e=>{
     }
 
     const primary=e.target.closest("[data-primary]");
+
     if(primary){
         primaryType=primary.dataset.primary;
-        if(pairedType===primaryType) pairedType=null;
+
+        if(pairedType===primaryType){
+            pairedType=null;
+        }
+
         renderExplorer();
         return;
     }
 
     const pair=e.target.closest("tr[data-pair]");
+
     if(pair){
         pairedType=pair.dataset.pair||null;
         renderExplorer();
     }
 });
 
+/* 分析 Analysis */
+document.getElementById("teamWeaknessBtn").addEventListener("click",()=>{
+    teamAnalysisOpen=!teamAnalysisOpen;
+    renderTeamAnalysis();
+    save();
+});
+
+/* 鍵盤操作比較表 */
 document.getElementById("researchTable").addEventListener("keydown",e=>{
-    if((e.key==="Enter"||e.key===" ")&&e.target.matches("tr[data-pair]")){
+    if(
+        (e.key==="Enter"||e.key===" ")&&
+        e.target.matches("tr[data-pair]")
+    ){
         e.preventDefault();
         pairedType=e.target.dataset.pair||null;
         renderExplorer();
     }
 });
 
+/* 選擇器清除 */
 document.getElementById("pickerClear").addEventListener("click",()=>{
     if(!activePicker) return;
+
     const {side,index,pos}=activePicker;
     setType(side,index,pos,null);
     closePicker();
 });
-document.getElementById("pickerClose").addEventListener("click",closePicker);
-document.getElementById("pickerCancel").addEventListener("click",closePicker);
+
+document.getElementById("pickerClose")
+    .addEventListener("click",closePicker);
+
+document.getElementById("pickerCancel")
+    .addEventListener("click",closePicker);
+
 document.getElementById("pickerBackdrop").addEventListener("click",e=>{
-    if(e.target===e.currentTarget) closePicker();
+    if(e.target===e.currentTarget){
+        closePicker();
+    }
 });
+
 document.addEventListener("keydown",e=>{
-    if(e.key==="Escape"&&activePicker) closePicker();
+    if(e.key==="Escape"&&activePicker){
+        closePicker();
+    }
+
     if(e.key==="Tab"&&activePicker){
-        const controls=[...document.querySelectorAll("#pickerBackdrop button")];
-        const first=controls[0],last=controls[controls.length-1];
+        const controls=[
+            ...document.querySelectorAll("#pickerBackdrop button")
+        ];
+
+        const first=controls[0];
+        const last=controls[controls.length-1];
+
         if(e.shiftKey&&document.activeElement===first){
-            e.preventDefault();last.focus();
+            e.preventDefault();
+            last.focus();
         }else if(!e.shiftKey&&document.activeElement===last){
-            e.preventDefault();first.focus();
+            e.preventDefault();
+            first.focus();
         }
     }
 });
 
+/* 初始化 */
 renderTeams();
 renderExplorer();
+
 </script>
 </body>
 </html>
