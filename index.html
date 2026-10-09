@@ -1120,14 +1120,17 @@ function renderNetwork(){
                 stroke-linecap="round"
                 marker-end="url(#${markerId})"
                 opacity="${eq(value,1)?.55:1}"/>
-            <rect x="${labelX-25}" y="${labelY-11}"
-                width="50" height="22" rx="7"
-                fill="#101722" stroke="#354052"/>
-            <text x="${labelX}" y="${labelY+4}"
-                text-anchor="middle" font-size="12"
-                font-weight="700" fill="${style.label}">
-                ${fmt(value)}×
-            </text>
+          
+            ${!eq(value,1)?`
+                <rect x="${labelX-25}" y="${labelY-11}"
+                    width="50" height="22" rx="7"
+                    fill="#101722" stroke="#354052"/>
+                <text x="${labelX}" y="${labelY+4}"
+                    text-anchor="middle" font-size="12"
+                    font-weight="700" fill="${style.label}">
+                    ${fmt(value)}×
+                </text>
+            `:""}
         `;
 
         nodes+=svgIcon(t.id,x-26,y-26,52);
