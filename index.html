@@ -1,0 +1,918 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>伊莫｜屬性剋制計算器</title>
+<style>
+:root{
+    color-scheme:dark;
+    font-family:system-ui,"Microsoft JhengHei",sans-serif;
+    font-size:clamp(14px,1vw,18px);
+    --bg:#10141c;
+    --panel:#1a202b;
+    --card:#222b38;
+    --line:#394557;
+    --text:#f3f5f8;
+    --muted:#aeb9ca;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text)}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid white;outline-offset:2px}
+header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:15px;
+    width:min(1700px,98%);
+    margin:auto;
+    padding:20px 0 14px;
+}
+h1{margin:0 0 5px;font-size:clamp(22px,2.4vw,34px)}
+header p{margin:0;color:var(--muted);font-size:.85rem}
+main{width:min(1700px,98%);margin:auto}
+
+/* 右上角倍率圖例 */
+.legend{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+    font-size:.82rem;
+    font-weight:700;
+}
+.legend-item{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    white-space:nowrap;
+}
+.legend-sample{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:30px;
+    height:30px;
+    border-radius:9px;
+}
+.legend-sample.double-strong{
+    background:rgba(246,169,60,.28);
+    border:1px solid rgb(246,169,60);
+}
+.legend-sample.double-resist{
+    background:rgba(163,115,210,.28);
+    border:1px solid rgb(163,115,210);
+}
+.legend-dot{
+    width:15px;
+    height:15px;
+    border-radius:50%;
+    background:#d7e0ed;
+}
+
+/* 隊伍 */
+.teams{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+}
+.panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px;
+    min-width:0;
+}
+.panel-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:10px;
+}
+.panel-title{
+    font-size:1.1rem;
+    font-weight:800;
+    margin:0;
+}
+.team-clear{
+    border:1px solid var(--line);
+    background:var(--card);
+    color:var(--muted);
+    border-radius:8px;
+    padding:7px 11px;
+    font-size:.77rem;
+    white-space:nowrap;
+}
+.team-clear:hover{
+    background:#374358;
+    color:white;
+}
+
+/* 隊伍格子 */
+.slots{display:grid;gap:8px}
+.slot{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:10px;
+}
+.slot-body{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+}
+.selection{
+    display:flex;
+    gap:6px;
+    flex-shrink:0;
+}
+
+/* 原始 attributes.png Sprite
+   尺寸：64 × 576
+   順序：草、火、電、土、風、水、光、暗、冰 */
+.aniimo-icon{
+    --type-color:#999;
+    --icon-size:20px;
+    --type-index:0;
+    width:30px;
+    height:30px;
+    border-radius:50%;
+    background:var(--type-color);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    vertical-align:middle;
+}
+.aniimo-icon i{
+    display:block;
+    width:var(--icon-size);
+    height:var(--icon-size);
+    background-image:url("attributes.png");
+    background-repeat:no-repeat;
+    background-size:var(--icon-size) calc(var(--icon-size) * 9);
+    background-position:0 calc(var(--type-index) * var(--icon-size) * -1);
+}
+.aniimo-icon.grass{
+    --type-color:rgb(81,177,122);
+    --type-index:0;
+}
+.aniimo-icon.fire{
+    --type-color:rgb(226,97,97);
+    --type-index:1;
+}
+.aniimo-icon.electric{
+    --type-color:rgb(224,194,26);
+    --type-index:2;
+}
+.aniimo-icon.earth{
+    --type-color:rgb(190,167,123);
+    --type-index:3;
+}
+.aniimo-icon.wind{
+    --type-color:rgb(88,199,177);
+    --type-index:4;
+}
+.aniimo-icon.water{
+    --type-color:rgb(82,157,231);
+    --type-index:5;
+}
+.aniimo-icon.light{
+    --type-color:rgb(246,169,60);
+    --type-index:6;
+}
+.aniimo-icon.dark{
+    --type-color:rgb(163,115,210);
+    --type-index:7;
+}
+.aniimo-icon.ice{
+    --type-color:rgb(69,193,214);
+    --type-index:8;
+}
+
+/* 圓形屬性選擇 */
+.type-button{
+    width:50px;
+    height:50px;
+    border:2px dashed #657186;
+    border-radius:50%;
+    background:#161d28;
+    color:#cad3df;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:2px;
+    flex-shrink:0;
+}
+.type-button.filled{
+    border-style:solid;
+    border-color:#647186;
+}
+.type-button:hover{border-color:white}
+.type-button .aniimo-icon{
+    --icon-size:30px;
+    width:42px;
+    height:42px;
+}
+.plus{font-size:1.5rem}
+
+/* 弱點與抗性 */
+.slot-info{
+    flex:1;
+    min-width:0;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+}
+.info-cell{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+}
+
+/* 中文一行，英文一行 */
+.info-label{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    flex-shrink:0;
+    width:45px;
+    gap:2px;
+    white-space:nowrap;
+}
+.info-label .zh{
+    color:var(--text);
+    font-size:.77rem;
+    font-weight:800;
+    line-height:1.2;
+}
+.info-label .en{
+    color:var(--muted);
+    font-size:.68rem;
+    font-weight:600;
+    line-height:1.2;
+}
+.info-tags{
+    flex:1;
+    min-width:0;
+    display:flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:4px;
+    min-height:30px;
+}
+.result-icon{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.result-icon .aniimo-icon{
+    --icon-size:17px;
+    width:25px;
+    height:25px;
+}
+.empty{
+    color:#8190a5;
+    font-size:.75rem;
+}
+
+/* 雙重倍率強調 */
+.bonus-group{
+    display:inline-flex;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:4px;
+    padding:4px 6px;
+    border-radius:20px;
+}
+.bonus-strong{
+    background:rgba(246,169,60,.28);
+    border:1px solid rgb(246,169,60);
+}
+.bonus-resist{
+    background:rgba(163,115,210,.28);
+    border:1px solid rgb(163,115,210);
+}
+.bonus-group .aniimo-icon{
+    --icon-size:17px;
+    width:25px;
+    height:25px;
+}
+
+/* 垃圾桶 */
+.slot-clear{
+    flex-shrink:0;
+    margin-left:auto;
+    border:0;
+    border-left:1px solid var(--line);
+    padding:10px 0 10px 10px;
+    background:transparent;
+    color:var(--muted);
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+}
+.slot-clear:hover{color:#f38e8e}
+.slot-clear svg{
+    width:19px;
+    height:19px;
+    fill:none;
+    stroke:currentColor;
+    stroke-width:1.8;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+}
+
+/* 屬性選擇視窗 */
+.picker-backdrop{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    background:#000b;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:14px;
+}
+.picker-backdrop[hidden]{display:none}
+.picker{
+    width:min(520px,100%);
+    background:var(--card);
+    border:1px solid #667286;
+    border-radius:16px;
+    padding:16px;
+    box-shadow:0 15px 60px #0009;
+}
+.picker-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+    font-weight:800;
+}
+.picker-close{
+    border:0;
+    color:var(--muted);
+    background:transparent;
+    font-size:1.2rem;
+}
+.icon-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:8px;
+}
+.pick{
+    min-height:78px;
+    border:2px solid #4c596c;
+    border-radius:10px;
+    background:#151c26;
+    color:var(--text);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:5px;
+}
+.pick .aniimo-icon{
+    --icon-size:30px;
+    width:44px;
+    height:44px;
+}
+.pick small{font-size:.73rem}
+.pick:hover,.pick.selected{
+    border-color:white;
+    background:#364152;
+}
+.pick:disabled{
+    opacity:.3;
+    cursor:not-allowed;
+}
+.picker-foot{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+}
+.picker-foot button{
+    flex:1;
+    background:#303c4e;
+    color:var(--text);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px;
+}
+.picker-foot button:hover{background:#435168}
+
+/* 響應式 */
+@media(max-width:1250px){
+    .teams{grid-template-columns:1fr}
+}
+@media(max-width:800px){
+    header{
+        flex-direction:column;
+        align-items:stretch;
+    }
+    .legend{justify-content:flex-start}
+}
+@media(max-width:650px){
+    main{width:100%;padding:0 7px}
+    .panel{padding:9px}
+    .slot{padding:8px}
+    .slot-body{gap:8px}
+    .selection{gap:4px}
+    .type-button{
+        width:43px;
+        height:43px;
+    }
+    .type-button .aniimo-icon{
+        --icon-size:24px;
+        width:35px;
+        height:35px;
+    }
+    .slot-info{gap:5px}
+    .info-cell{gap:4px}
+    .info-label{
+        width:39px;
+        gap:2px;
+    }
+    .info-label .zh{font-size:.69rem}
+    .info-label .en{font-size:.61rem}
+    .info-tags{gap:3px;min-height:22px}
+    .result-icon .aniimo-icon,
+    .bonus-group .aniimo-icon{
+        --icon-size:13px;
+        width:20px;
+        height:20px;
+    }
+    .bonus-group{padding:3px}
+    .slot-clear{padding:8px 0 8px 6px}
+    .slot-clear svg{width:17px;height:17px}
+}
+@media(max-width:390px){
+    .slot-body{gap:5px}
+    .type-button{
+        width:37px;
+        height:37px;
+    }
+    .type-button .aniimo-icon{
+        --icon-size:20px;
+        width:29px;
+        height:29px;
+    }
+    .info-label{width:35px}
+    .info-label .zh{font-size:.65rem}
+    .info-label .en{font-size:.56rem}
+    .slot-info{gap:3px}
+    .result-icon .aniimo-icon,
+    .bonus-group .aniimo-icon{
+        --icon-size:11px;
+        width:18px;
+        height:18px;
+    }
+}
+</style>
+</head>
+<body>
+
+<header>
+    <div>
+        <h1>伊莫｜屬性剋制計算器</h1>
+        <p>快速查詢隊伍屬性的弱點與抗性</p>
+    </div>
+
+    <div class="legend" aria-label="特殊倍率圖例">
+        <span class="legend-item" title="雙重剋制">
+            <span class="legend-sample double-strong">
+                <span class="legend-dot"></span>
+            </span>
+            2.56
+        </span>
+        <span class="legend-item" title="雙重抗性">
+            <span class="legend-sample double-resist">
+                <span class="legend-dot"></span>
+            </span>
+            0.390625
+        </span>
+    </div>
+</header>
+
+<main>
+    <section class="teams">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">我方隊伍｜My Team</h2>
+                <button class="team-clear" data-clear-team="ally">
+                    清空｜Clear
+                </button>
+            </div>
+            <div class="slots" id="allySlots"></div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">敵方隊伍｜Enemy Team</h2>
+                <button class="team-clear" data-clear-team="enemy">
+                    清空｜Clear
+                </button>
+            </div>
+            <div class="slots" id="enemySlots"></div>
+        </div>
+    </section>
+</main>
+
+<div class="picker-backdrop" id="pickerBackdrop" hidden>
+    <div class="picker" role="dialog" aria-modal="true" aria-labelledby="pickerTitle">
+        <div class="picker-title">
+            <span id="pickerTitle">選擇屬性</span>
+            <button class="picker-close" id="pickerClose" aria-label="關閉">✕</button>
+        </div>
+        <div class="icon-grid" id="pickerGrid"></div>
+        <div class="picker-foot">
+            <button id="pickerClear">清除此屬性</button>
+            <button id="pickerCancel">返回</button>
+        </div>
+    </div>
+</div>
+
+<script>
+"use strict";
+
+const TYPES=[
+    {id:"grass",name:"草"},
+    {id:"fire",name:"火"},
+    {id:"electric",name:"電"},
+    {id:"earth",name:"土"},
+    {id:"wind",name:"風"},
+    {id:"water",name:"水"},
+    {id:"light",name:"光"},
+    {id:"dark",name:"暗"},
+    {id:"ice",name:"冰"}
+];
+
+const IDS=TYPES.map(t=>t.id);
+const TYPE_MAP=Object.fromEntries(TYPES.map(t=>[t.id,t]));
+
+/* 攻擊屬性 -> 防禦屬性 */
+const ADVANTAGE={
+    fire:["grass","ice"],
+    water:["fire","earth"],
+    grass:["water","earth"],
+    electric:["water","wind"],
+    ice:["water","electric"],
+    earth:["fire","ice"],
+    wind:["grass","dark"],
+    dark:["grass","electric","light"],
+    light:["wind","dark"]
+};
+
+const RESISTED={
+    fire:["fire","water","earth","light"],
+    water:["water","grass","ice","light"],
+    grass:["fire","grass","light"],
+    electric:["electric","ice","earth"],
+    ice:["fire","ice","earth"],
+    earth:["water","grass","earth","dark"],
+    wind:["electric","wind"],
+    dark:["water","wind"],
+    light:["electric","light"]
+};
+
+function multiplier(attack,defense){
+    if(ADVANTAGE[attack]?.includes(defense)) return 1.6;
+    if(RESISTED[attack]?.includes(defense)) return 0.625;
+    return 1;
+}
+
+function blankTeam(){
+    return Array.from({length:4},()=>[null,null]);
+}
+function blankState(){
+    return {ally:blankTeam(),enemy:blankTeam()};
+}
+function validSlot(slot){
+    if(!Array.isArray(slot)) return [null,null];
+
+    const a=IDS.includes(slot[0])?slot[0]:null;
+    const b=IDS.includes(slot[1])&&slot[1]!==a?slot[1]:null;
+
+    return a?[a,b]:b?[b,null]:[null,null];
+}
+
+/* 沿用 v8 隊伍資料 */
+function loadState(){
+    try{
+        const saved=JSON.parse(localStorage.getItem("aniimo-type-team-v8"));
+        if(!saved) return blankState();
+
+        const result=blankState();
+
+        for(const side of ["ally","enemy"]){
+            if(Array.isArray(saved[side])){
+                result[side]=saved[side].slice(0,4).map(validSlot);
+            }
+            while(result[side].length<4){
+                result[side].push([null,null]);
+            }
+        }
+        return result;
+    }catch{
+        return blankState();
+    }
+}
+
+let state=loadState();
+let activePicker=null;
+let previousFocus=null;
+
+function save(){
+    try{
+        localStorage.setItem("aniimo-type-team-v8",JSON.stringify(state));
+    }catch{}
+}
+function slotTypes(slot){
+    return slot.filter(Boolean);
+}
+function eq(a,b){
+    return a!==null&&Math.abs(a-b)<0.00001;
+}
+function iconHTML(id){
+    if(!id) return "";
+
+    return `<span class="aniimo-icon ${id}"
+        role="img"
+        aria-label="${TYPE_MAP[id].name}"
+        title="${TYPE_MAP[id].name}">
+        <i aria-hidden="true"></i>
+    </span>`;
+}
+
+/* 單一攻擊屬性對雙屬性防禦 */
+function attackValue(attack,defenseSlot){
+    const defenses=slotTypes(defenseSlot);
+    if(!attack||!defenses.length) return null;
+
+    return defenses.reduce((value,t)=>value*multiplier(attack,t),1);
+}
+
+/* 弱點、抗性 */
+function defenseAnalysis(slot){
+    const result={
+        weakness:{normal:[],bonus:[]},
+        resistance:{normal:[],bonus:[]}
+    };
+
+    if(!slotTypes(slot).length) return result;
+
+    for(const type of TYPES){
+        const value=attackValue(type.id,slot);
+
+        if(eq(value,1.6)){
+            result.weakness.normal.push({id:type.id});
+        }else if(eq(value,2.56)){
+            result.weakness.bonus.push({id:type.id});
+        }else if(eq(value,0.625)){
+            result.resistance.normal.push({id:type.id});
+        }else if(eq(value,0.390625)){
+            result.resistance.bonus.push({id:type.id});
+        }
+    }
+    return result;
+}
+
+function normalIcons(items){
+    return items.map(x=>`
+        <span class="result-icon" title="${TYPE_MAP[x.id].name}">
+            ${iconHTML(x.id)}
+        </span>
+    `).join("");
+}
+
+function bonusIcons(items,kind){
+    if(!items.length) return "";
+
+    const cls=kind==="strong"?"bonus-strong":"bonus-resist";
+    const value=kind==="strong"?"2.56":"0.390625";
+
+    return `<span class="bonus-group ${cls}" title="雙重效果 ×${value}">
+        ${items.map(x=>`
+            <span class="result-icon"
+                title="${TYPE_MAP[x.id].name} ×${value}">
+                ${iconHTML(x.id)}
+            </span>
+        `).join("")}
+    </span>`;
+}
+
+/* 中英文改成上下兩行 */
+function infoCell(zh,en,data,kind){
+    let content=normalIcons(data.normal);
+    content+=bonusIcons(data.bonus,kind);
+    if(!content) content='<span class="empty">—</span>';
+
+    return `<div class="info-cell">
+        <div class="info-label">
+            <span class="zh">${zh}</span>
+            <span class="en">${en}</span>
+        </div>
+        <div class="info-tags">${content}</div>
+    </div>`;
+}
+
+/* 垃圾桶 SVG */
+const TRASH_ICON=`
+<svg viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M3 6h18"/>
+    <path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/>
+    <path d="M19 6l-1 14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1L5 6"/>
+    <path d="M10 11v6"/>
+    <path d="M14 11v6"/>
+</svg>`;
+
+function slotHTML(side,index){
+    const slot=state[side][index];
+    const sideName=side==="ally"?"我方":"敵方";
+    const defense=defenseAnalysis(slot);
+
+    return `<article class="slot">
+        <div class="slot-body">
+            <div class="selection">
+                ${[0,1].map(pos=>`
+                    <button
+                        class="type-button ${slot[pos]?"filled":""}"
+                        data-pick="${side}:${index}:${pos}"
+                        aria-label="${sideName}${index+1}，第${pos+1}屬性，${slot[pos]?TYPE_MAP[slot[pos]].name:"未選擇"}">
+                        ${slot[pos]
+                            ?iconHTML(slot[pos])
+                            :'<span class="plus">＋</span>'}
+                    </button>
+                `).join("")}
+            </div>
+
+            <div class="slot-info">
+                ${infoCell("弱點","Weak",defense.weakness,"strong")}
+                ${infoCell("抗性","Resist",defense.resistance,"resist")}
+            </div>
+        </div>
+    </article>`;
+}
+
+function render(){
+    document.getElementById("allySlots").innerHTML=
+        state.ally.map((_,i)=>slotHTML("ally",i)).join("");
+
+    document.getElementById("enemySlots").innerHTML=
+        state.enemy.map((_,i)=>slotHTML("enemy",i)).join("");
+
+    save();
+}
+
+/*
+    屬性選擇與交換：
+
+    原本：火 + 水
+
+    點第一格選水 -> 水 + 火
+    點第二格選火 -> 水 + 火
+
+    選其他屬性 -> 直接替換指定格子。
+*/
+function setType(side,index,pos,type){
+    const slot=state[side][index];
+    const other=1-pos;
+
+    if(!type){
+        if(pos===0){
+            slot[0]=slot[1];
+            slot[1]=null;
+        }else{
+            slot[1]=null;
+        }
+    }else if(slot[other]===type){
+        // 選到另一格既有的屬性，直接交換。
+        [slot[0],slot[1]]=[slot[1],slot[0]];
+    }else if(pos===1&&!slot[0]){
+        slot[0]=type;
+        slot[1]=null;
+    }else{
+        slot[pos]=type;
+    }
+
+    render();
+}
+
+function closePicker(){
+    document.getElementById("pickerBackdrop").hidden=true;
+    activePicker=null;
+
+    if(previousFocus?.isConnected){
+        previousFocus.focus();
+    }
+    previousFocus=null;
+}
+
+function openPicker(side,index,pos){
+    previousFocus=document.activeElement;
+    activePicker={side,index,pos};
+
+    const slot=state[side][index];
+    const sideName=side==="ally"?"我方":"敵方";
+
+    document.getElementById("pickerTitle").textContent=
+        `${sideName} ${index+1}｜選擇第 ${pos+1} 屬性`;
+
+    // 不再禁用另一格已選的屬性。
+    // 可以直接選擇，觸發交換機制。
+    document.getElementById("pickerGrid").innerHTML=TYPES.map(t=>{
+        const selected=slot[pos]===t.id;
+        const otherSelected=slot[1-pos]===t.id;
+
+        return `<button
+            class="pick ${selected||otherSelected?"selected":""}"
+            data-type="${t.id}"
+            aria-pressed="${selected}"
+            title="${otherSelected?"選擇後交換兩個屬性":t.name}"
+            aria-label="${t.name}${otherSelected?"，交換位置":""}">
+            ${iconHTML(t.id)}
+            <small>${t.name}${otherSelected?" ⇄":""}</small>
+        </button>`;
+    }).join("");
+
+    document.getElementById("pickerBackdrop").hidden=false;
+    document.querySelector("#pickerGrid .pick")?.focus();
+}
+
+document.addEventListener("click",e=>{
+    const pick=e.target.closest("[data-pick]");
+
+    if(pick){
+        const [side,index,pos]=pick.dataset.pick.split(":");
+        openPicker(side,Number(index),Number(pos));
+        return;
+    }
+
+
+    // 隊伍清空不顯示確認框
+    const clearTeam=e.target.closest("[data-clear-team]");
+
+    if(clearTeam){
+        const side=clearTeam.dataset.clearTeam;
+        state[side]=blankTeam();
+        render();
+        return;
+    }
+
+    const type=e.target.closest("[data-type]");
+
+    if(type&&activePicker){
+        const {side,index,pos}=activePicker;
+        setType(side,index,pos,type.dataset.type);
+        closePicker();
+    }
+});
+
+document.getElementById("pickerClear").addEventListener("click",()=>{
+    if(!activePicker) return;
+
+    const {side,index,pos}=activePicker;
+    setType(side,index,pos,null);
+    closePicker();
+});
+
+document.getElementById("pickerClose").addEventListener("click",closePicker);
+document.getElementById("pickerCancel").addEventListener("click",closePicker);
+
+document.getElementById("pickerBackdrop").addEventListener("click",e=>{
+    if(e.target===e.currentTarget) closePicker();
+});
+
+document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"&&activePicker) closePicker();
+
+    if(e.key==="Tab"&&activePicker){
+        const controls=[
+            ...document.querySelectorAll("#pickerBackdrop button:not(:disabled)")
+        ];
+
+        const first=controls[0];
+        const last=controls[controls.length-1];
+
+        if(e.shiftKey&&document.activeElement===first){
+            e.preventDefault();
+            last.focus();
+        }else if(!e.shiftKey&&document.activeElement===last){
+            e.preventDefault();
+            first.focus();
+        }
+    }
+});
+
+render();
+</script>
+</body>
+</html>
